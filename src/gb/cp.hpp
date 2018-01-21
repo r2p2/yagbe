@@ -2010,7 +2010,7 @@ private:
     { 0x53, /* BIT 2,E    */ [this]() { _bit(e(), 2); _pc += 2; _cycles = 8; } },
     { 0x54, /* BIT 2,H    */ [this]() { _bit(h(), 2); _pc += 2; _cycles = 8; } },
     { 0x55, /* BIT 2,L    */ [this]() { _bit(l(), 2); _pc += 2; _cycles = 8; } },
-    { 0x56, /* BIT 2,(HL) */ [this]() { reg_t i = _mm.read(hl()); _bit(i, 2); _mm.write(hl(), 2); _pc += 2; _cycles = 16; } },
+    { 0x56, /* BIT 2,(HL) */ [this]() { reg_t i = _mm.read(hl()); _bit(i, 2); _mm.write(hl(), i); _pc += 2; _cycles = 16; } },
     { 0x57, /* BIT 2,A    */ [this]() { _bit(a(), 2); _pc += 2; _cycles = 8; } },
 
     { 0x58, /* BIT 3,B    */ [this]() { _bit(b(), 3); _pc += 2; _cycles = 8; } },
