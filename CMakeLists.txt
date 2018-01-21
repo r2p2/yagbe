@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 
 project(yagbe VERSION 0.0.1 LANGUAGES CXX)
 
+set(DEBUG_CPU "emable cpu debug output" CACHE BOOL OFF)
+
 find_package(SDL2 REQUIRED)
 string (STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
 
@@ -13,6 +15,10 @@ set(SOURCE_FILES
 
 add_executable(yagbe
   ${SOURCE_FILES})
+
+if (DEBUG_CPU)
+  target_compile_definitions(yagbe PRIVATE -DDEBUG_CPU)
+endif()
 
 target_include_directories(yagbe SYSTEM
   PRIVATE ${SDL2_INCLUDE_DIRS})
