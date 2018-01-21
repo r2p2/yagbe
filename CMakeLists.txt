@@ -1,0 +1,21 @@
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+
+project(yagbe VERSION 0.0.1 LANGUAGES CXX)
+
+find_package(SDL2 REQUIRED)
+string (STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
+
+set(SOURCE_FILES
+  src/main.cc)
+
+add_executable(yagbe
+  ${SOURCE_FILES})
+
+target_include_directories(yagbe SYSTEM
+  PRIVATE ${SDL2_INCLUDE_DIRS})
+
+target_link_libraries(yagbe
+  PRIVATE ${SDL2_LIBRARIES})
