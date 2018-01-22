@@ -111,14 +111,21 @@ public:
   }
 
 private:
-  reg_t _pixel_tile(wide_reg_t index, int x, int y, bool tds = false, bool x_flip = false) const
+  reg_t _pixel_tile(
+    wide_reg_t index,
+    int x,
+    int y,
+    bool tds = false,
+    bool x_flip = false,
+    bool y_flip = false) const
   {
     reg_t tile_byte_1 = 0;
     reg_t tile_byte_2 = 0;
 
+    int const tile_y = y_flip ? (7-y) : y;
     if (tds) {
-      tile_byte_1 = _mm.read(0x8000 + (index*16) + y*2 + 0);
-      tile_byte_2 = _mm.read(0x8000 + (index*16) + y*2 + 1);
+      tile_byte_1 = _mm.read(0x8000 + (index*16) + tile_y*2 + 0);
+      tile_byte_2 = _mm.read(0x8000 + (index*16) + tile_y*2 + 1);
     }
     else {
       tile_byte_1 = _mm.read(0x9000 + (static_cast<uint16_t>(index)*16) + y*2 + 0);
@@ -181,7 +188,10 @@ private:
       reg_t const s_y = _mm.read(0xFE00 + i*4 + 0);
       reg_t const s_x = _mm.read(0xFE00 + i*4 + 1);
       reg_t const s_n = _mm.read(0xFE00 + i*4 + 2);
-      //reg_t const c = _mm.read(0xFE00 + i*4 + 3);
+      reg_t const c   = _mm.read(0xFE00 + i*4 + 3);
+
+      bool const xf   = c & 0x20;
+      bool const yf   = c & 0x40;
 
       if (s_y == 0 or s_x == 0) {
         continue;
@@ -197,7 +207,7 @@ private:
       // printf("XXX %03d %03d\n", o_x, o_y);
 
       // FIXME only 10 per scanline
-      color = _pixel_tile(s_n, o_x, o_y, true, false);
+      color = _pixel_tile(s_n, o_x, o_y, true, xf, yf);
     }
     return color;
   }
