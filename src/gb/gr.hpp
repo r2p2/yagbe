@@ -163,21 +163,25 @@ private:
 
   reg_t _pixel_window(int x, int y) const
   {
+    bool tile_data_select = (lcdc() & 0x10);
     int tile_map_start = ((lcdc() & 0x40) == 0) ? 0x9800 : 0x9C00;
 
-    int const background_x = (x + wx()) % 256;
-    int const background_y = (y + wy()) % 256;
+    int const bg_x = (x - wx() + 6);
+    int const bg_y = (y - wy());
 
-    int const tile_x = background_x / 8;
-    int const tile_y = background_y / 8;
+	if (bg_x < 0 or bg_x >= 256 or bg_y < 0 or bg_y >= 256)
+		return 0x00;
 
-    int const tile_local_x = background_x % 8;
-    int const tile_local_y = background_y % 8;
+    int const tile_x = bg_x / 8;
+    int const tile_y = bg_y / 8;
+
+    int const tile_local_x = bg_x % 8;
+    int const tile_local_y = bg_y % 8;
 
     int const tile_data_table_index = tile_y * 32 + tile_x;
     int const tile_index = _mm.read(tile_map_start + tile_data_table_index);
 
-    return _pixel_tile(tile_index, tile_local_x, tile_local_y, false);
+    return _pixel_tile(tile_index, tile_local_x, tile_local_y, tile_data_select);
   }
 
   reg_t _pixel_sprite(int x, int y) const
