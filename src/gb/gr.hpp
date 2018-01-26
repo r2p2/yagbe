@@ -136,7 +136,7 @@ private:
     reg_t const pixel_bit_1 = (tile_byte_1 & (1 << bit)) > 0;
     reg_t const pixel_bit_2 = (tile_byte_2 & (1 << bit)) > 0;
 
-    return (pixel_bit_1 << 1) | pixel_bit_2;
+    return (pixel_bit_2 << 1) | pixel_bit_1;
   }
 
   reg_t _pixel_background(int x, int y) const
