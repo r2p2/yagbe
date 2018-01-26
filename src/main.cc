@@ -46,7 +46,7 @@ int main(int argc, char** argv)
     auto const delta = end - start;
     auto const delta_ms =
       std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
-    auto const sleep = static_cast<unsigned long>((1000.0/250.0)-delta_ms); // FIXME should be 60
+    auto const sleep = static_cast<unsigned long>((1000.0/60.0)-delta_ms); // FIXME should be 60
     start = end + std::chrono::milliseconds(sleep);
 
     if (sleep > 0)

@@ -36,7 +36,7 @@ public:
   void tick()
   {
     ++_ck;
-    if (_ck == 4) {
+    if (_ck == 1) {
       _ck = 0;
       ++_lx;
     }
