@@ -142,8 +142,9 @@ private:
   reg_t _pixel_background(int x, int y) const
   {
     bool tile_data_select = (lcdc() & 0x10);
+    bool tile_map_select  = (lcdc() & 0x08);
 
-    int tile_map_start = 0x9800;
+    int tile_map_start = tile_map_select == false ? 0x9800 : 0x9C00;
 
     int const background_x = (x + scx()) % 256;
     int const background_y = (y + scy()) % 256;
