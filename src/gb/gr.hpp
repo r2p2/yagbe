@@ -101,8 +101,8 @@ public:
     reg_t sp = sp_on  ? _pixel_sprite(x, y) : 0;
     reg_t wd = win_on ? _pixel_window(x, y) : 0;
 
-    // if (wd > 0)
-    //   return wd;
+    if (wd > 0)
+      return wd;
 
     if (sp > 0)
       return sp;
