@@ -36,7 +36,7 @@ public:
 
     ++_cnt;
 
-    if (_cnt > _cls[cls]) {
+    if (_cnt >= _cls[cls]) {
       _cnt = 0;
 
       auto tima = _mm.read(0xFF05) + 1;
