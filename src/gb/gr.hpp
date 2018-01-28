@@ -36,17 +36,17 @@ public:
   void tick()
   {
     ++_ck;
-    if (_ck == 4) {
+    if (_ck == 1) {
       _ck = 0;
       ++_lx;
     }
 
-    if (_lx == (160 + 45)) {
+    if (_lx == (160 + 10)) {
       ly(ly() + 1);
       _lx = 0;
     }
 
-    if (ly() == 144 + 45) {
+    if (ly() == 144 + 10) {
       ly(0);
     }
 
@@ -101,8 +101,8 @@ public:
     reg_t sp = sp_on  ? _pixel_sprite(x, y) : 0;
     reg_t wd = win_on ? _pixel_window(x, y) : 0;
 
-    // if (wd > 0)
-    //   return wd;
+    if (wd > 0)
+      return wd;
 
     if (sp > 0)
       return sp;
@@ -136,14 +136,15 @@ private:
     reg_t const pixel_bit_1 = (tile_byte_1 & (1 << bit)) > 0;
     reg_t const pixel_bit_2 = (tile_byte_2 & (1 << bit)) > 0;
 
-    return (pixel_bit_1 << 1) | pixel_bit_2;
+    return (pixel_bit_2 << 1) | pixel_bit_1;
   }
 
   reg_t _pixel_background(int x, int y) const
   {
     bool tile_data_select = (lcdc() & 0x10);
+    bool tile_map_select  = (lcdc() & 0x08);
 
-    int tile_map_start = 0x9800;
+    int tile_map_start = tile_map_select == false ? 0x9800 : 0x9C00;
 
     int const background_x = (x + scx()) % 256;
     int const background_y = (y + scy()) % 256;
@@ -162,21 +163,25 @@ private:
 
   reg_t _pixel_window(int x, int y) const
   {
+    bool tile_data_select = (lcdc() & 0x10);
     int tile_map_start = ((lcdc() & 0x40) == 0) ? 0x9800 : 0x9C00;
 
-    int const background_x = (x + wx()) % 256;
-    int const background_y = (y + wy()) % 256;
+    int const bg_x = (x - wx() + 6);
+    int const bg_y = (y - wy());
 
-    int const tile_x = background_x / 8;
-    int const tile_y = background_y / 8;
+	if (bg_x < 0 or bg_x >= 256 or bg_y < 0 or bg_y >= 256)
+		return 0x00;
 
-    int const tile_local_x = background_x % 8;
-    int const tile_local_y = background_y % 8;
+    int const tile_x = bg_x / 8;
+    int const tile_y = bg_y / 8;
+
+    int const tile_local_x = bg_x % 8;
+    int const tile_local_y = bg_y % 8;
 
     int const tile_data_table_index = tile_y * 32 + tile_x;
     int const tile_index = _mm.read(tile_map_start + tile_data_table_index);
 
-    return _pixel_tile(tile_index, tile_local_x, tile_local_y, false);
+    return _pixel_tile(tile_index, tile_local_x, tile_local_y, tile_data_select);
   }
 
   reg_t _pixel_sprite(int x, int y) const

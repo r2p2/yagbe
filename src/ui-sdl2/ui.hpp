@@ -186,16 +186,16 @@ private:
       for (int x = 0; x < 160; ++x) {
         switch(gb.pixel(x, y)) {
         case 3: // black
-          SDL_SetRenderDrawColor(r,   0,   0,   0, 255);
+          SDL_SetRenderDrawColor(r,  25,  43,  21, 255);
           break;
         case 2: // dark grey
-          SDL_SetRenderDrawColor(r, 150, 150, 150, 255);
+          SDL_SetRenderDrawColor(r,  48,  93,  38, 255);
           break;
         case 1: // light grey
-          SDL_SetRenderDrawColor(r, 200, 200, 200, 255);
+          SDL_SetRenderDrawColor(r,  74, 191,  49, 255);
           break;
         default: // white
-          SDL_SetRenderDrawColor(r, 255, 255, 255, 255);
+          SDL_SetRenderDrawColor(r,  74, 229,  42, 255);
           break;
         }
 
