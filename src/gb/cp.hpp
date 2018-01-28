@@ -104,6 +104,11 @@ public:
 
     if (_halted)
       return false;
+
+#if DEBUG_CPU
+    dbg();
+#endif
+
     _process_opcode();
 
     return true;
