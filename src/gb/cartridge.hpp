@@ -45,6 +45,9 @@ public:
     if (addr >= _rom.size())
       return;
 
+    if (addr < 0x8000) // FIXME remove when implementing mcbx
+      return;
+
     _rom[addr] = value;
   }
 
