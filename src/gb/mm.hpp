@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "cartridge.hpp"
 
 #include <array>
 
@@ -9,11 +10,13 @@ class MM
 public:
   void insert_rom(mem_t const& rom)
   {
-    _rom = rom;
+    _cr.load(rom);
   }
 
   void power_on()
   {
+    _cr.power_on();
+
     _verified = false;
 
     for (auto& mem : _mem)
@@ -44,7 +47,7 @@ public:
       value = _dmg[addr];
     }
     else if (addr < 0x8000) {
-      value = _rom[addr]; // FIXME mcbx
+      value = _cr.read(addr); // FIXME mcbx
     }
     else {
       value = _mem[addr];
@@ -77,7 +80,7 @@ public:
       // don't write
     }
     else if (addr < 0x8000) {
-      _rom[addr] = value; // FIXME mcbx
+      _cr.write(addr, value); // FIXME mcbx
     }
     else {
       _mem[addr] = value;
@@ -110,9 +113,10 @@ public:
 //  }
 
 private:
-  bool  _verified = false;
-  mem_t _rom      = mem_t();
-  mem_t _mem      = mem_t(0xFFFF, static_cast<uint8_t>(0));
+  bool      _verified = false;
+  Cartridge _cr;
+  mem_t     _rom      = mem_t();
+  mem_t     _mem      = mem_t(0xFFFF, static_cast<uint8_t>(0));
 
   std::array<reg_t, 0x100> const _dmg = {{
     0x31, 0xfe, 0xff, 0xaf, 0x21, 0xff, 0x9f, 0x32, 0xcb, 0x7c, 0x20, 0xfb,
