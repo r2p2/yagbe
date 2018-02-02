@@ -191,7 +191,7 @@ private:
     bool const small_sprites = not (lcdc() & 0x04);
     reg_t color = 0x00;
 
-    for (int i = 0; i < 40; ++i) { // FIXME other direction
+    for (int i = 39; i >= 0; --i) {
       reg_t const s_y = _mm.read(0xFE00 + i*4 + 0);
       reg_t const s_x = _mm.read(0xFE00 + i*4 + 1);
       reg_t const s_n = _mm.read(0xFE00 + i*4 + 2);
