@@ -211,10 +211,13 @@ private:
         continue;
       }
 
-      // printf("XXX %03d %03d\n", o_x, o_y);
+      auto const new_color = _pixel_tile(s_n, o_x, o_y, true, xf, yf);
+      if (new_color == 0) {
+        continue;
+      }
 
+      color = new_color;
       // FIXME only 10 per scanline
-      color = _pixel_tile(s_n, o_x, o_y, true, xf, yf);
     }
     return color;
   }
