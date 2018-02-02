@@ -100,16 +100,18 @@ public:
     }
 
     reg_t bg = bg_on  ? _pixel_background(x, y) : 0;
-    reg_t sp = sp_on  ? _pixel_sprite(x, y) : 0;
     reg_t wd = win_on ? _pixel_window(x, y) : 0;
 
-    if (wd > 0)
-      return wd;
+    reg_t color = wd;
+    if (color == 0) {
+      color = bg;
+    }
 
-    if (sp > 0)
-      return sp;
+    if (sp_on) {
+      color = _pixel_sprite(x, y, color);
+    }
 
-    return bg;
+    return color;
   }
 
 private:
@@ -186,7 +188,7 @@ private:
     return _pixel_tile(tile_index, tile_local_x, tile_local_y, tile_data_select);
   }
 
-  reg_t _pixel_sprite(int x, int y) const
+  reg_t _pixel_sprite(int x, int y, reg_t old_color) const
   {
     bool const small_sprites = not (lcdc() & 0x04);
     reg_t color = 0x00;
@@ -197,8 +199,9 @@ private:
       reg_t const s_n = _mm.read(0xFE00 + i*4 + 2);
       reg_t const c   = _mm.read(0xFE00 + i*4 + 3);
 
-      bool const xf   = c & 0x20;
-      bool const yf   = c & 0x40;
+      bool const xf   =      c & 0x20;
+      bool const yf   =      c & 0x40;
+      bool const prio = not (c & 0x80);
 
       if (s_y == 0 or s_x == 0) {
         continue;
@@ -216,10 +219,12 @@ private:
         continue;
       }
 
-      color = new_color;
+      if (prio or old_color == 0)
+        color = new_color;
       // FIXME only 10 per scanline
     }
-    return color;
+
+    return color ? color : old_color;
   }
 
 private:
