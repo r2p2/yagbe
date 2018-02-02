@@ -41,16 +41,15 @@ public:
       ++_lx;
     }
 
-    if (_lx == (160 + 10)) {
+    if (_lx == (160 + 50)) {
       ly(ly() + 1);
       _lx = 0;
     }
 
-    if (ly() == 144 + 10) {
+    if (ly() == 144 + 50) {
       ly(0);
     }
 
-    reg_t stat = _mm.read(0xFF41) & 0xF8;
     reg_t mode = 0x00;
     if (ly() >= 144) {
       mode = 0x01;
@@ -58,12 +57,15 @@ public:
     else if (lx() >= 160) {
       mode = 0x00;
     }
+    else if (lx() >= 50) {
+      mode = 0x02;
+    }
     else {
       mode = 0x03;
     }
 
     reg_t ly_lyc = (ly() == lyc()) << 2;
-
+    reg_t stat = _mm.read(0xFF41) & 0xF8;
     _mm.write(0xFF41, stat | ly_lyc | mode);
 
     auto const int_00 = stat & 0x08;
