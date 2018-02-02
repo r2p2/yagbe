@@ -114,7 +114,7 @@ public:
 
 private:
   reg_t _pixel_tile(
-    wide_reg_t index,
+    reg_t index,
     int x,
     int y,
     bool tds = false,
@@ -130,8 +130,8 @@ private:
       tile_byte_2 = _mm.read(0x8000 + (index*16) + tile_y*2 + 1);
     }
     else {
-      tile_byte_1 = _mm.read(0x9000 + (static_cast<uint16_t>(index)*16) + y*2 + 0);
-      tile_byte_2 = _mm.read(0x9000 + (static_cast<uint16_t>(index)*16) + y*2 + 1);
+      tile_byte_1 = _mm.read(0x9000 + (static_cast<int8_t>(index)*16) + y*2 + 0);
+      tile_byte_2 = _mm.read(0x9000 + (static_cast<int8_t>(index)*16) + y*2 + 1);
     }
 
     int   const bit         = x_flip ? x : (7 - x);
