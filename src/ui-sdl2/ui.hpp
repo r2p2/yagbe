@@ -19,12 +19,16 @@ public:
     if (memory)
       _init_mem();
 
-    if (tiles)
-      _init_tile();
+    if (tiles) {
+      _init_tile_1();
+      _init_tile_2();
+    }
   }
 
   ~UiSDL()
   {
+    SDL_DestroyRenderer(_tile2_ren);
+    SDL_DestroyWindow(_tile2_win);
     SDL_DestroyRenderer(_tile_ren);
     SDL_DestroyWindow(_tile_win);
     SDL_DestroyRenderer(_mem_ren);
@@ -89,8 +93,11 @@ public:
       }
 
       if (_tile_ren) {
-        _render_tiles(_tile_ren, _gb);
+        _render_tiles(_tile_ren, _gb, _tile_pattern_1_start);
         SDL_RenderPresent(_tile_ren);
+
+        _render_tiles(_tile2_ren, _gb, _tile_pattern_2_start);
+        SDL_RenderPresent(_tile2_ren);
       }
     }
   }
@@ -152,12 +159,12 @@ private:
     SDL_RenderClear(_mem_ren);
   }
 
-  void _init_tile()
+  void _init_tile_1()
   {
     _tile_win = SDL_CreateWindow(
-      "Tile View",
+      "Tile View 1",
       100,
-      144*2 + 200,
+      144*2 + 400,
       8*16,
       8*16,
       SDL_WINDOW_SHOWN);
@@ -174,6 +181,30 @@ private:
     }
 
     SDL_RenderClear(_tile_ren);
+  }
+
+  void _init_tile_2()
+  {
+    _tile2_win = SDL_CreateWindow(
+      "Tile View 2",
+      300,
+      144*2 + 400,
+      8*16,
+      8*16,
+      SDL_WINDOW_SHOWN);
+
+    if (_tile2_win == nullptr) {
+      std::cout << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
+      SDL_Quit();
+    }
+
+    _tile2_ren = SDL_CreateRenderer(_tile2_win, -1, 0);
+    if (_tile_ren == nullptr) {
+      std::cout << "SDL_CreateRenderer Error: " << SDL_GetError() << std::endl;
+      SDL_Quit();
+    }
+
+    SDL_RenderClear(_tile2_ren);
   }
 
   void _render_main(SDL_Renderer* r, GB const& gb)
@@ -207,21 +238,27 @@ private:
     }
   }
 
-  void _render_tiles(SDL_Renderer* r, GB const& gb)
+  void _render_tiles(SDL_Renderer* r, GB const& gb, wide_reg_t tpsa)
   {
     for (int i = 0; i < 256; ++i) {
       auto const x = i%16*8;
       auto const y = i/16*8;
-      _render_tile(i, x, y, r, gb);
+      _render_tile(tpsa, i, x, y, r, gb);
     }
   }
 
-  void _render_tile(int n, int off_x, int off_y, SDL_Renderer* r, GB const& gb)
+  void _render_tile(
+      wide_reg_t tpsaddr,
+      int n,
+      int off_x,
+      int off_y,
+      SDL_Renderer* r,
+      GB const& gb)
   {
     int y = 0;
     for (int i = 0; i < 16; i += 2) {
-      auto const byte1 = gb.mem(0x8000 + i + 0 + (n*16));
-      auto const byte2 = gb.mem(0x8000 + i + 1 + (n*16));
+      auto const byte1 = gb.mem(tpsaddr + i + 0 + (n*16));
+      auto const byte2 = gb.mem(tpsaddr + i + 1 + (n*16));
       int x = 0;
       for (int b = 7; b >= 0; --b) {
         bool const bit1 = byte1 & (1 << b);
@@ -298,4 +335,10 @@ private:
 
   SDL_Window*   _tile_win = nullptr;
   SDL_Renderer* _tile_ren = nullptr;
+
+  SDL_Window*   _tile2_win = nullptr;
+  SDL_Renderer* _tile2_ren = nullptr;
+
+  wide_reg_t const _tile_pattern_1_start = 0x8000;
+  wide_reg_t const _tile_pattern_2_start = 0x8800;
 };
