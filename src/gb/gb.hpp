@@ -71,7 +71,7 @@ public:
 
   bool is_v_blank_completed() const
   {
-    return _gr.ly() == 0 and _gr.lx() == 0;
+    return _gr.lx() == 0 and _gr.ly() == 0;
   }
 
   void tick()
