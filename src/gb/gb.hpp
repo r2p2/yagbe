@@ -64,6 +64,11 @@ public:
     return _display.height();
   }
 
+  void screen_refresh()
+  {
+    _display.refresh();
+  }
+
   Display::screen_t screen() const
   {
     return _display.screen();
@@ -83,7 +88,6 @@ public:
     _cp.tick();
     _in.tick();
     _t.tick();
-    _display.tick();
     _gr.tick();
 
     // FIXME: remove this serial dbg hack
