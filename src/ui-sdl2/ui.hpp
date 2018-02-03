@@ -11,6 +11,7 @@ public:
   UiSDL(GB& gb, int scale, bool memory, bool tiles)
     : _gb(gb)
     , _scale(scale)
+    , _refresh(true)
   {
     _init_sdl();
 
@@ -213,29 +214,37 @@ private:
     rect.w = _scale;
     rect.h = _scale;
 
-    for (int y = 0; y < 144; ++y) {
-      for (int x = 0; x < 160; ++x) {
-        switch(gb.pixel(x, y)) {
-        case 3: // black
-          SDL_SetRenderDrawColor(r,  25,  43,  21, 255);
-          break;
-        case 2: // dark grey
-          SDL_SetRenderDrawColor(r,  48,  93,  38, 255);
-          break;
-        case 1: // light grey
-          SDL_SetRenderDrawColor(r,  74, 191,  49, 255);
-          break;
-        default: // white
-          SDL_SetRenderDrawColor(r,  74, 229,  42, 255);
-          break;
-        }
+    auto const screen = gb.screen();
+    for (size_t i = 0; i < screen.size(); ++i) {
+      if (not _refresh and screen[i] == _last_screen[i])
+        continue;
 
-        rect.x = x * rect.w;
-        rect.y = y * rect.h;
+      auto const x = i % gb.screen_width();
+      auto const y = i / gb.screen_width();
 
-        SDL_RenderFillRect(r, &rect);
+      switch(screen[i]) {
+      case 3: // black
+        SDL_SetRenderDrawColor(r,  25,  43,  21, 255);
+        break;
+      case 2: // dark grey
+        SDL_SetRenderDrawColor(r,  48,  93,  38, 255);
+        break;
+      case 1: // light grey
+        SDL_SetRenderDrawColor(r,  74, 191,  49, 255);
+        break;
+      default: // white
+        SDL_SetRenderDrawColor(r,  74, 229,  42, 255);
+        break;
       }
+
+      rect.x = x * rect.w;
+      rect.y = y * rect.h;
+
+      SDL_RenderFillRect(r, &rect);
     }
+
+    _last_screen = screen;
+    _refresh = false;
   }
 
   void _render_tiles(SDL_Renderer* r, GB const& gb, wide_reg_t tpsa)
@@ -341,4 +350,7 @@ private:
 
   wide_reg_t const _tile_pattern_1_start = 0x8000;
   wide_reg_t const _tile_pattern_2_start = 0x8800;
+
+  Display::screen_t _last_screen;
+  bool              _refresh;
 };
