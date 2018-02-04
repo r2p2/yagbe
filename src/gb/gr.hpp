@@ -54,24 +54,30 @@ public:
 
   void tick()
   {
+    auto v_ly = ly();
+    auto const v_ly_orig = v_ly;
+
     ++_lx;
 
-    if (_lx == 430) {
-      ly(ly() + 1);
+    if (_lx == 450) {
+      ++v_ly;
       _lx = 0;
     }
 
-    if (ly() == 154) {
-      ly(0);
+    if (v_ly == 154) {
+      v_ly = 0;
     }
 
+    bool mode_entered = false;
+
     reg_t mode = 0x00;
-    if (ly() >= 144) {
+    if (v_ly >= 144) {
       mode = 0x01;
     }
     else if (lx() == 360) {
       mode = 0x02;
-      _render_scanline(ly());
+      _render_scanline(v_ly);
+      mode_entered = true;
     }
     else if (lx() > 360) {
       mode = 0x02;
@@ -79,12 +85,17 @@ public:
     else if (lx() >= 160) {
       mode = 0x00;
     }
+    else if (lx() == 0) {
+      mode = 0x03;
+      mode_entered = true;
+      _render_background(lx(), v_ly);
+    }
     else {
       mode = 0x03;
-      _render_background(lx(), ly());
+      _render_background(lx(), v_ly);
     }
 
-    reg_t ly_lyc = (ly() == lyc()) << 2;
+    reg_t ly_lyc = (v_ly == lyc()) << 2;
     reg_t stat = _mm.read(0xFF41) & 0xF8;
     _mm.write(0xFF41, stat | ly_lyc | mode);
 
@@ -99,13 +110,16 @@ public:
       (mode == 0x10 and int_10) or
       (ly_lyc       and int_ly);
 
-    if (lx() == 0 and interrupt) {
+    if (mode_entered and interrupt) {
       _mm.write(0xFF0F, _mm.read(0xFF0F) | 0x02); // LCDC int
     }
 
-    if (ly() == 144 and lx() == 0) {
+    if (v_ly == 144 and lx() == 0) {
       _mm.write(0xFF0F, _mm.read(0xFF0F) | 0x01); // vblank
     }
+
+    if (v_ly != v_ly_orig)
+      ly(v_ly);
   }
 
 private:
