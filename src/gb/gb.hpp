@@ -4,7 +4,6 @@
 #include "mm.hpp"
 #include "gr.hpp"
 #include "cp.hpp"
-#include "display.hpp"
 #include "input.hpp"
 #include "timer.hpp"
 
@@ -30,7 +29,6 @@ public:
     _mm.power_on();
     _cp.power_on();
     _t.power_on();
-    _display.power_on();
     _in.power_on();
   }
 
@@ -49,29 +47,19 @@ public:
     return _mm.read(addr);
   }
 
-  reg_t pixel(int x, int y) const
-  {
-    return _gr.pixel(x, y);
-  }
-
   reg_t screen_width() const
   {
-    return _display.width();
+    return _gr.width();
   }
 
   reg_t screen_height() const
   {
-    return _display.height();
+    return _gr.height();
   }
 
-  void screen_refresh()
+  GR::screen_t screen() const
   {
-    _display.refresh();
-  }
-
-  Display::screen_t screen() const
-  {
-    return _display.screen();
+    return _gr.screen();
   }
 
   bool is_v_blank_completed() const
@@ -106,7 +94,6 @@ private:
   MM      _mm;
   CP      _cp      = { _mm };
   GR      _gr      = { _mm };
-  Display _display = { _mm, _gr };
   Timer   _t       = { _mm };
   Input   _in      = { _mm };
 };

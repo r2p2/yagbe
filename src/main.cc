@@ -36,12 +36,7 @@ int main(int argc, char** argv)
       gb.tick();
     }
     while(not gb.is_v_blank_completed());
-
-    frame = (frame + 1) % 4;
-    if (frame == 0) {
-      gb.screen_refresh();
-      ui.tick();
-    }
+    ui.tick();
 
     auto const end = std::chrono::steady_clock::now();
     auto const delta = end - start;

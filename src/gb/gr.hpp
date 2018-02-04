@@ -6,27 +6,46 @@
 
 class GR
 {
+  static const reg_t WIDTH  = 160;
+  static const reg_t HEIGHT = 144;
+
 public:
+  typedef std::array<reg_t, WIDTH*HEIGHT> screen_t;
+
   GR(MM& mm)
     : _mm(mm)
-    , _ck(0)
     , _lx(0)
   {}
 
   void power_on()
   {
-    _ck = 0;
     _lx = 0;
+    _screen  = screen_t();
   }
 
-  reg_t lcdc() const { return _mm.read(0xFF40); }
-  reg_t scy()  const { return _mm.read(0xFF42); }
-  reg_t scx()  const { return _mm.read(0xFF43); }
-  reg_t wy()   const { return _mm.read(0xFF4A); }
-  reg_t wx()   const { return _mm.read(0xFF4B); }
-  reg_t ly()   const { return _mm.read(0xFF44); }
-  reg_t lyc()  const { return _mm.read(0xFF45); }
-  reg_t lx()   const { return _lx; }
+  screen_t screen() const
+  {
+    return _screen;
+  }
+
+  reg_t width() const
+  {
+    return WIDTH;
+  }
+
+  reg_t height() const
+  {
+    return HEIGHT;
+  }
+
+  reg_t lcdc()    const { return _mm.read(0xFF40); }
+  reg_t scy()     const { return _mm.read(0xFF42); }
+  reg_t scx()     const { return _mm.read(0xFF43); }
+  reg_t wy()      const { return _mm.read(0xFF4A); }
+  reg_t wx()      const { return _mm.read(0xFF4B); }
+  reg_t ly()      const { return _mm.read(0xFF44); }
+  reg_t lyc()     const { return _mm.read(0xFF45); }
+  wide_reg_t lx() const { return _lx; }
 
   void ly(reg_t val)
   {
@@ -35,18 +54,14 @@ public:
 
   void tick()
   {
-    ++_ck;
-    if (_ck == 1) {
-      _ck = 0;
-      ++_lx;
-    }
+    ++_lx;
 
-    if (_lx == (160 + 50)) {
+    if (_lx == 430) {
       ly(ly() + 1);
       _lx = 0;
     }
 
-    if (ly() == 144 + 50) {
+    if (ly() == 154) {
       ly(0);
     }
 
@@ -54,14 +69,19 @@ public:
     if (ly() >= 144) {
       mode = 0x01;
     }
+    else if (lx() == 360) {
+      mode = 0x02;
+      _render_scanline(ly());
+    }
+    else if (lx() > 360) {
+      mode = 0x02;
+    }
     else if (lx() >= 160) {
       mode = 0x00;
     }
-    else if (lx() >= 50) {
-      mode = 0x02;
-    }
     else {
       mode = 0x03;
+      _render_background(lx(), ly());
     }
 
     reg_t ly_lyc = (ly() == lyc()) << 2;
@@ -79,39 +99,13 @@ public:
       (mode == 0x10 and int_10) or
       (ly_lyc       and int_ly);
 
-    if (_ck == 0 and interrupt) {
+    if (lx() == 0 and interrupt) {
       _mm.write(0xFF0F, _mm.read(0xFF0F) | 0x02); // LCDC int
     }
 
-    if (ly() == 144 and lx() == 0 and _ck == 0) {
+    if (ly() == 144 and lx() == 0) {
       _mm.write(0xFF0F, _mm.read(0xFF0F) | 0x01); // vblank
     }
-  }
-
-  reg_t pixel(int x, int y) const
-  {
-    bool const sc_on  = (lcdc() & 0x80);
-    bool const sp_on  = (lcdc() & 0x02);
-    bool const win_on = (lcdc() & 0x20);
-    bool const bg_on  = (lcdc() & 0x01);
-
-    if (not sc_on) {
-      return 0x00;
-    }
-
-    reg_t bg = bg_on  ? _pixel_background(x, y) : 0;
-    reg_t wd = win_on ? _pixel_window(x, y) : 0;
-
-    reg_t color = wd;
-    if (color == 0) {
-      color = bg;
-    }
-
-    if (sp_on) {
-      color = _pixel_sprite(x, y, color);
-    }
-
-    return color;
   }
 
 private:
@@ -141,6 +135,91 @@ private:
     reg_t const pixel_bit_2 = (tile_byte_2 & (1 << bit)) > 0;
 
     return (pixel_bit_2 << 1) | pixel_bit_1;
+  }
+
+  void _render_scanline(int line)
+  {
+    auto const v_lcdc = lcdc();
+    if (not (v_lcdc & 0x80))
+      return;
+
+    if (v_lcdc & 0x20)
+      _render_window(line);
+
+    if (v_lcdc & 0x02)
+       _render_sprites(line);
+  }
+
+  void _render_window(int line)
+  {
+    int const v_wx = wx() - 7;
+    int const v_wy = wy();
+
+    for (int x = 0; x < 160; ++x) {
+      auto const color = _pixel_window(x, line);
+
+      if (x < v_wx or line < v_wy)
+        continue;
+
+      auto& pixel = _screen[line * width() + x];
+      pixel = color;
+    }
+  }
+
+  void _render_sprites(int line)
+  {
+    bool const small_sprites = not (lcdc() & 0x04);
+    reg_t sprite_count = 0;
+
+    for (int i = 0; i < 40 and sprite_count < 11; ++i) {
+      auto const oam_addr = 0xFE00 + i*4;
+      reg_t const s_y = _mm.read(oam_addr + 0);
+      reg_t const s_x = _mm.read(oam_addr + 1);
+      reg_t const s_n = _mm.read(oam_addr + 2);
+      reg_t const c   = _mm.read(oam_addr + 3);
+
+      bool const xf   =      c & 0x20;
+      bool const yf   =      c & 0x40;
+      bool const prio = not (c & 0x80);
+
+      if (s_y == 0 or s_x == 0) {
+        continue;
+      }
+
+      reg_t const right_x = s_x;
+      reg_t const left_x  = s_x - 8;
+
+      reg_t const bottom_y = small_sprites ? s_y - 9 : s_y-1;
+      reg_t const top_y = s_y - 16;
+
+      if (line < top_y or line > bottom_y)
+        continue;
+
+      ++sprite_count;
+
+      for (int x = 0; x < 8; ++x) {
+        auto const screen_x = left_x + x;
+        if (screen_x >= 160)
+          continue;
+
+        auto const new_color = _pixel_tile(s_n, x, line - top_y, true, xf, yf);
+        if (new_color == 0) {
+          continue;
+        }
+
+        auto& pixel = _screen[line * width() + left_x+x];
+        if (prio or pixel == 0)
+          pixel = new_color;
+      }
+    }
+  }
+
+  void _render_background(int x, int y)
+  {
+    auto const v_lcdc = lcdc();
+    if (not (v_lcdc & 0x01) or not (v_lcdc & 0x80))
+      return;
+    _screen[y * width() + x] = _pixel_background(x, y);
   }
 
   reg_t _pixel_background(int x, int y) const
@@ -173,8 +252,8 @@ private:
     int const bg_x = (x - wx() + 6);
     int const bg_y = (y - wy());
 
-	if (bg_x < 0 or bg_x >= 256 or bg_y < 0 or bg_y >= 256)
-		return 0x00;
+    if (bg_x < 0 or bg_x >= 256 or bg_y < 0 or bg_y >= 256)
+      return 0x00;
 
     int const tile_x = bg_x / 8;
     int const tile_y = bg_y / 8;
@@ -228,8 +307,9 @@ private:
   }
 
 private:
-  MM& _mm;
+  MM&       _mm;
 
-  int _ck;
-  int _lx;
+  int       _lx;
+
+  screen_t  _screen;
 };
