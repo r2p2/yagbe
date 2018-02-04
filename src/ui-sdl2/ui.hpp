@@ -351,6 +351,6 @@ private:
   wide_reg_t const _tile_pattern_1_start = 0x8000;
   wide_reg_t const _tile_pattern_2_start = 0x8800;
 
-  Display::screen_t _last_screen;
+  GR::screen_t _last_screen;
   bool              _refresh;
 };
