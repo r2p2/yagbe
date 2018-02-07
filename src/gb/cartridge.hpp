@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "error.hpp"
 
 class Cartridge
 {
@@ -18,9 +19,14 @@ public:
     Unsupported,
   };
 
-  void load(std::vector<reg_t> const& data)
+  Error load(std::vector<reg_t> const& data)
   {
     _rom = data;
+
+    if (not _is_rom_supported())
+      return Error(Error::Code::RomNotSupported);
+
+    return Error::NoError();
   }
 
   void power_on()
@@ -96,6 +102,15 @@ public:
     default:
       return 0;
       }
+  }
+
+private:
+  bool _is_rom_supported() const
+  {
+    return rom_banks() == 0 and
+      ram_banks() == 0 and
+      (mcb_type() == McbType::RomOnly or
+       mcb_type() == McbType::Mcb1);
   }
 
 private:

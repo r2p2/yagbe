@@ -8,9 +8,9 @@
 class MM
 {
 public:
-  void insert_rom(mem_t const& rom)
+  Error insert_rom(mem_t const& rom)
   {
-    _cr.load(rom);
+    return _cr.load(rom);
   }
 
   void power_on()
