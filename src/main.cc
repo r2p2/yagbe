@@ -8,11 +8,12 @@
 #include <streambuf>
 #include <chrono>
 #include <thread>
+#include <cstdlib>
 
 int main(int argc, char** argv)
 {
   if (argc < 2)
-    return 1;
+    return EXIT_FAILURE;
 
   std::ifstream s_cart(
     argv[1],
@@ -23,7 +24,12 @@ int main(int argc, char** argv)
     std::istreambuf_iterator<char>());
 
   GB gb;
-  gb.insert_rom(cart);
+  auto const error = gb.insert_rom(cart);
+  if (error.is_set()) {
+    printf("%s\n", error.text());
+    return EXIT_FAILURE;
+  }
+
   gb.power_on();
 
   UiSDL ui(gb, 3, false, false);
@@ -49,5 +55,5 @@ int main(int argc, char** argv)
       std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
   }
 
-  return 0;
+  return EXIT_SUCCESS;
 }

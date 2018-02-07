@@ -19,9 +19,9 @@ public:
   typedef std::vector<reg_t> cartridge_t;
   typedef std::vector<reg_t> mem_t;
 
-  void insert_rom(cartridge_t const& cartridge)
+  Error insert_rom(cartridge_t const& cartridge)
   {
-    _mm.insert_rom(cartridge);
+    return _mm.insert_rom(cartridge);
   }
 
   void power_on()
