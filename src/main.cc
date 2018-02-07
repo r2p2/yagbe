@@ -26,7 +26,7 @@ int main(int argc, char** argv)
   GB gb;
   auto const error = gb.insert_rom(cart);
   if (error.is_set()) {
-    printf("%s\n", error.text());
+    printf("%s\n", error.text().c_str());
     return EXIT_FAILURE;
   }
 
