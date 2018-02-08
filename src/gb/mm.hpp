@@ -35,8 +35,6 @@ public:
 
   reg_t read(wide_reg_t addr) const
   {
-	  // if (addr == 0xFF00) // FIXME input hack
-		//   return 0xFF;
     reg_t value = 0;
 
     if (addr >= 0xE000 and addr < 0xFE00) {
@@ -46,21 +44,18 @@ public:
     if (addr < 0x0100 and not _verified) {
       value = _dmg[addr];
     }
-    else if (addr < 0x8000) {
-      value = _cr.read(addr); // FIXME mcbx
+    else if (addr < 0x8000 or (addr >= 0xA000 and addr <= 0xBFFF)) {
+      value = _cr.read(addr);
     }
     else {
       value = _mem[addr];
     }
 
-    // printf("MMU READ @%04x = %02x\n", addr, value);
     return value;
   }
 
   void write(wide_reg_t addr, reg_t value, bool internal = false)
   {
-    // printf("MMU WRITE @%04x = %02x\n", addr, value);
-
     if (not internal and addr == 0xFF04) { // DIV
       value = 0;
     }
@@ -79,38 +74,13 @@ public:
     if (addr < 0x0100 and not _verified) {
       // don't write
     }
-    else if (addr < 0x8000) {
-      _cr.write(addr, value); // FIXME mcbx
+    else if (addr < 0x8000 or (addr >= 0xA000 and addr <= 0xBFFF)) {
+      _cr.write(addr, value);
     }
     else {
       _mem[addr] = value;
     }
   }
-
-  /*
-  reg_t const& mem(wide_reg_t addr) const
-  {
-    if (addr < 0x0100 and not _verified) {
-      return _dmg[addr];
-    }
-
-    if (addr < 0x8000) {
-      return _rom[addr];
-    }
-
-    if (addr >= 0xE000 and addr < 0xFE00) {
-      addr -= 0x2000; // adjust for mirror ram
-    }
-
-    return _mem[addr];
-  }
-  */
-
-//  reg_t& mem(wide_reg_t addr)
-//  {
-//    return
-//      const_cast<reg_t&>(const_cast<MM const*>(this)->mem(addr));
-//  }
 
 private:
   bool      _verified = false;
