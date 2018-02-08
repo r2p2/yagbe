@@ -6,14 +6,14 @@
 class Cartridge
 {
 public:
-  enum class McbType {
+  enum class MbcType {
     RomOnly,
-    Mcb1,
-    Mcb2,
-    Mcb3,
-    Mcb5,
-    Mcb6,
-    Mcb7,
+    Mbc1,
+    Mbc2,
+    Mbc3,
+    Mbc5,
+    Mbc6,
+    Mbc7,
     RomRam,
     Mmm,
     Unsupported,
@@ -32,7 +32,7 @@ public:
   void power_on()
   {
     printf(
-      "CART: mcb type:%d rom banks:%d ram banks:%d\n",
+      "CART: mbc type:%d rom banks:%d ram banks:%d\n",
       read(0x0147),
       rom_banks(),
       ram_banks());
@@ -58,8 +58,8 @@ public:
   {
     auto mapped_addr = 0x0000;
 
-    switch (mcb_type()) {
-    case McbType::Mcb1:
+    switch (mbc_type()) {
+    case MbcType::Mbc1:
       mapped_addr = _mm_mbc1_rom_mapping(addr);
       break;
     default:
@@ -78,8 +78,8 @@ public:
   {
     auto mapped_addr = 0x0000;
 
-    switch (mcb_type()) {
-    case McbType::Mcb1:
+    switch (mbc_type()) {
+    case MbcType::Mbc1:
       mapped_addr = _mm_mbc1_ram_mapping(addr);
       break;
     default:
@@ -105,8 +105,8 @@ public:
 
   void write_rom(wide_reg_t addr, reg_t value)
   {
-    switch (mcb_type()) {
-    case McbType::Mcb1:
+    switch (mbc_type()) {
+    case MbcType::Mbc1:
       _mm_mbc1(addr, value);
     default:
       return;
@@ -117,8 +117,8 @@ public:
   {
     auto mapped_addr = 0x0000;
 
-    switch (mcb_type()) {
-    case McbType::Mcb1:
+    switch (mbc_type()) {
+    case MbcType::Mbc1:
       mapped_addr = _mm_mbc1_ram_mapping(addr);
       break;
     default:
@@ -133,18 +133,18 @@ public:
     _ram[mapped_addr] = value;
   }
 
-  McbType mcb_type() const {
+  MbcType mbc_type() const {
     switch (_rom[0x0147]) {
-    case 0x00: return McbType::RomOnly;
+    case 0x00: return MbcType::RomOnly;
     case 0x01:
     case 0x02:
-    case 0x03: return McbType::Mcb1;
+    case 0x03: return MbcType::Mbc1;
     // case 0x05:
-    // case 0x06: return McbType::Mcb2;
+    // case 0x06: return MbcType::Mbc2;
     case 0x08:
-    case 0x09: return McbType::RomRam;
+    case 0x09: return MbcType::RomRam;
     default:
-      return McbType::Unsupported;
+      return MbcType::Unsupported;
     }
   }
 
@@ -183,8 +183,8 @@ public:
 private:
   bool _is_rom_supported() const
   {
-    return (mcb_type() == McbType::RomOnly or
-       mcb_type() == McbType::Mcb1);
+    return (mbc_type() == MbcType::RomOnly or
+       mbc_type() == MbcType::Mbc1);
   }
 
   bool _mm_mbc1(wide_reg_t addr, reg_t value)
