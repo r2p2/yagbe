@@ -224,16 +224,16 @@ private:
 
       switch(screen[i]) {
       case 3: // black
-        SDL_SetRenderDrawColor(r,  25,  43,  21, 255);
+        SDL_SetRenderDrawColor(r,  15,  56,  15, 255);
         break;
       case 2: // dark grey
-        SDL_SetRenderDrawColor(r,  48,  93,  38, 255);
+        SDL_SetRenderDrawColor(r,  48,  98,  48, 255);
         break;
       case 1: // light grey
-        SDL_SetRenderDrawColor(r,  74, 191,  49, 255);
+        SDL_SetRenderDrawColor(r, 139, 172,  15, 255);
         break;
       default: // white
-        SDL_SetRenderDrawColor(r,  74, 229,  42, 255);
+        SDL_SetRenderDrawColor(r, 155, 188,  15, 255);
         break;
       }
 
