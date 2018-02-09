@@ -198,11 +198,11 @@ private:
         continue;
       }
 
-      reg_t const right_x = s_x;
-      reg_t const left_x  = s_x - 8;
+      int const right_x = s_x;
+      int const left_x  = s_x - 8;
 
-      reg_t const bottom_y = small_sprites ? s_y - 9 : s_y-1;
-      reg_t const top_y = s_y - 16;
+      int const bottom_y = small_sprites ? s_y - 9 : s_y-1;
+      int const top_y = s_y - 16;
 
       if (line < top_y or line > bottom_y)
         continue;
@@ -211,7 +211,7 @@ private:
 
       for (int x = 0; x < 8; ++x) {
         auto const screen_x = left_x + x;
-        if (screen_x >= 160)
+        if (screen_x < 0 or screen_x >= 160)
           continue;
 
 	auto const dot_color =
