@@ -157,11 +157,11 @@ private:
     if (not (v_lcdc & 0x80))
       return;
 
-    if (v_lcdc & 0x20)
-      _render_window(line);
-
     if (v_lcdc & 0x02)
        _render_sprites(line);
+
+    if (v_lcdc & 0x20)
+      _render_window(line);
   }
 
   void _render_window(int line)
