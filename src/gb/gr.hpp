@@ -283,45 +283,6 @@ private:
     return _pixel_tile(tile_index, tile_local_x, tile_local_y, tile_data_select);
   }
 
-  reg_t _pixel_sprite(int x, int y, reg_t old_color) const
-  {
-    bool const small_sprites = not (lcdc() & 0x04);
-    reg_t color = 0x00;
-
-    for (int i = 39; i >= 0; --i) {
-      reg_t const s_y = _mm.read(0xFE00 + i*4 + 0);
-      reg_t const s_x = _mm.read(0xFE00 + i*4 + 1);
-      reg_t const s_n = _mm.read(0xFE00 + i*4 + 2);
-      reg_t const c   = _mm.read(0xFE00 + i*4 + 3);
-
-      bool const xf   =      c & 0x20;
-      bool const yf   =      c & 0x40;
-      bool const prio = not (c & 0x80);
-
-      if (s_y == 0 or s_x == 0) {
-        continue;
-      }
-
-      reg_t const o_x = x - (s_x -  8);
-      reg_t const o_y = y - (s_y - 16);
-
-      if (o_x >= 8 or o_y >= 16 or (small_sprites and o_y >= 8)) {
-        continue;
-      }
-
-      auto const new_color = _pixel_tile(s_n, o_x, o_y, true, xf, yf);
-      if (new_color == 0) {
-        continue;
-      }
-
-      if (prio or old_color == 0)
-        color = new_color;
-      // FIXME only 10 per scanline
-    }
-
-    return color ? color : old_color;
-  }
-
   reg_t _map_palette(wide_reg_t addr, reg_t value)
   {
     return (_mm.read(addr) >> (2*value)) & 0x03;
