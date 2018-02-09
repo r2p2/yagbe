@@ -170,13 +170,10 @@ private:
     int const v_wy = wy();
 
     for (int x = 0; x < 160; ++x) {
-      auto const color = _pixel_window(x, line);
-
       if (x < v_wx or line < v_wy)
         continue;
 
-      auto& pixel = _screen[line * width() + x];
-      pixel = color;
+      _screen[line * width() + x] = _map_palette(0xFF47, _pixel_window(x, line));
     }
   }
 
@@ -194,6 +191,7 @@ private:
 
       bool const xf   =      c & 0x20;
       bool const yf   =      c & 0x40;
+      bool const pal  =      c & 0x10;
       bool const prio = not (c & 0x80);
 
       if (s_y == 0 or s_x == 0) {
@@ -216,10 +214,13 @@ private:
         if (screen_x >= 160)
           continue;
 
-        auto const new_color = _pixel_tile(s_n, x, line - top_y, true, xf, yf);
-        if (new_color == 0) {
-          continue;
-        }
+	auto const dot_color =
+	  _pixel_tile(s_n, x, line - top_y, true, xf, yf);
+	if (dot_color == 0)
+	  continue;
+
+        auto const new_color =
+	  _map_palette(0xFF48 + pal, dot_color);
 
         auto& pixel = _screen[line * width() + left_x+x];
         if (prio or pixel == 0)
@@ -233,7 +234,8 @@ private:
     auto const v_lcdc = lcdc();
     if (not (v_lcdc & 0x01) or not (v_lcdc & 0x80))
       return;
-    _screen[y * width() + x] = _pixel_background(x, y);
+
+    _screen[y * width() + x] = _map_palette(0xFF47, _pixel_background(x, y));
   }
 
   reg_t _pixel_background(int x, int y) const
@@ -318,6 +320,11 @@ private:
     }
 
     return color ? color : old_color;
+  }
+
+  reg_t _map_palette(wide_reg_t addr, reg_t value)
+  {
+    return (_mm.read(addr) >> (2*value)) & 0x03;
   }
 
 private:
