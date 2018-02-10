@@ -49,7 +49,7 @@ public:
 
   void ly(reg_t val)
   {
-    _mm.write(0xFF44, val);
+    _mm.write(0xFF44, val, true);
   }
 
   void tick()
