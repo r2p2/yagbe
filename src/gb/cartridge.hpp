@@ -87,10 +87,6 @@ public:
     }
 
     if (mapped_addr >= _ram.size()) {
-      printf("ram oom access bank #%d address %04x mapped to %d\n",
-	     _ram_bank_nr(),
-	     addr,
-	     mapped_addr);
       return 0x00;
     }
 
