@@ -314,9 +314,21 @@ private:
       auto const y = i / width;
       auto const x = i % width;
       auto const val = gb.mem(i);
-      if (i >= 0x8000 and i <= 0x8FFF) {
-        SDL_SetRenderDrawColor(r, 0, val, 0, 255);
+
+      if (i >= 0x8000 and i <  0x8800) {
+        SDL_SetRenderDrawColor(r, 100,  20, val, 255);
       }
+      else if (i >= 0x8800 and i <= 0x8FFF) {
+        SDL_SetRenderDrawColor(r, 100,  50, val, 255);
+      }
+      else if (i >= 0x9000 and i <= 0x97FF) {
+        SDL_SetRenderDrawColor(r, 100, 100, val, 255);
+      }
+
+      else if (i >= 0xA000 and i <= 0xBFFF) {
+        SDL_SetRenderDrawColor(r, 100, 50, val, 255);
+      }
+
       else if (i >= 0xFE00 and i < 0xFEA0) {
         SDL_SetRenderDrawColor(r, 100, 100, val, 255);
       }
