@@ -9,14 +9,18 @@
 #include <chrono>
 #include <thread>
 #include <cstdlib>
+#include <iterator>
 
 int main(int argc, char** argv)
 {
   if (argc < 2)
     return EXIT_FAILURE;
 
+  std::string const rom_path = argv[1];
+  std::string const sav_path = rom_path + ".sav"; // FIXME do it properly
+
   std::ifstream s_cart(
-    argv[1],
+    rom_path,
     std::ios::in | std::ios::binary);
 
   GB::cartridge_t cart(
@@ -30,6 +34,15 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
+  std::ifstream s_sav_in(
+    sav_path,
+    std::ios::in | std::ios::binary);
+
+  GB::mem_t sav(
+    (std::istreambuf_iterator<char>(s_sav_in)),
+    std::istreambuf_iterator<char>());
+  
+  gb.load_ram(sav);
   gb.power_on();
 
   UiSDL ui(gb, 3, false, false);
@@ -54,6 +67,14 @@ int main(int argc, char** argv)
     if (sleep > 0)
       std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
   }
+
+  std::ofstream s_sav_out(
+    sav_path,
+    std::ios::out | std::ios::binary);
+  std::ostream_iterator<char> s_sav_out_it(s_sav_out);
+
+  auto const ram = gb.ram();
+  std::copy(ram.begin(), ram.end(), s_sav_out_it);
 
   return EXIT_SUCCESS;
 }

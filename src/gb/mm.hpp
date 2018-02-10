@@ -13,6 +13,16 @@ public:
     return _cr.load(rom);
   }
 
+  Error load_ram(mem_t const& ram)
+  {
+    return _cr.load_ram(ram);
+  }
+
+  mem_t ram() const
+  {
+    return _cr.ram();
+  }
+
   void power_on()
   {
     _cr.power_on();
