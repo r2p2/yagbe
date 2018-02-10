@@ -49,7 +49,7 @@ public:
 
   void ly(reg_t val)
   {
-    _mm.write(0xFF44, val);
+    _mm.write(0xFF44, val, true);
   }
 
   void tick()
@@ -157,11 +157,11 @@ private:
     if (not (v_lcdc & 0x80))
       return;
 
-    if (v_lcdc & 0x20)
-      _render_window(line);
-
     if (v_lcdc & 0x02)
        _render_sprites(line);
+
+    if (v_lcdc & 0x20)
+      _render_window(line);
   }
 
   void _render_window(int line)
@@ -169,8 +169,11 @@ private:
     int const v_wx = wx() - 7;
     int const v_wy = wy();
 
+    if (wx() > 166 or wy() >= 143 or line < v_wy or (line > v_wy + 144))
+      return;
+
     for (int x = 0; x < 160; ++x) {
-      if (x < v_wx or line < v_wy)
+      if (x < v_wx or x > (v_wx + 166))
         continue;
 
       _screen[line * width() + x] = _map_palette(0xFF47, _pixel_window(x, line));
@@ -198,11 +201,11 @@ private:
         continue;
       }
 
-      reg_t const right_x = s_x;
-      reg_t const left_x  = s_x - 8;
+      int const right_x = s_x;
+      int const left_x  = s_x - 8;
 
-      reg_t const bottom_y = small_sprites ? s_y - 9 : s_y-1;
-      reg_t const top_y = s_y - 16;
+      int const bottom_y = small_sprites ? s_y - 9 : s_y-1;
+      int const top_y = s_y - 16;
 
       if (line < top_y or line > bottom_y)
         continue;
@@ -211,7 +214,7 @@ private:
 
       for (int x = 0; x < 8; ++x) {
         auto const screen_x = left_x + x;
-        if (screen_x >= 160)
+        if (screen_x < 0 or screen_x >= 160)
           continue;
 
 	auto const dot_color =
@@ -268,9 +271,6 @@ private:
     int const bg_x = (x - wx() + 6);
     int const bg_y = (y - wy());
 
-    if (bg_x < 0 or bg_x >= 256 or bg_y < 0 or bg_y >= 256)
-      return 0x00;
-
     int const tile_x = bg_x / 8;
     int const tile_y = bg_y / 8;
 
@@ -281,45 +281,6 @@ private:
     int const tile_index = _mm.read(tile_map_start + tile_data_table_index);
 
     return _pixel_tile(tile_index, tile_local_x, tile_local_y, tile_data_select);
-  }
-
-  reg_t _pixel_sprite(int x, int y, reg_t old_color) const
-  {
-    bool const small_sprites = not (lcdc() & 0x04);
-    reg_t color = 0x00;
-
-    for (int i = 39; i >= 0; --i) {
-      reg_t const s_y = _mm.read(0xFE00 + i*4 + 0);
-      reg_t const s_x = _mm.read(0xFE00 + i*4 + 1);
-      reg_t const s_n = _mm.read(0xFE00 + i*4 + 2);
-      reg_t const c   = _mm.read(0xFE00 + i*4 + 3);
-
-      bool const xf   =      c & 0x20;
-      bool const yf   =      c & 0x40;
-      bool const prio = not (c & 0x80);
-
-      if (s_y == 0 or s_x == 0) {
-        continue;
-      }
-
-      reg_t const o_x = x - (s_x -  8);
-      reg_t const o_y = y - (s_y - 16);
-
-      if (o_x >= 8 or o_y >= 16 or (small_sprites and o_y >= 8)) {
-        continue;
-      }
-
-      auto const new_color = _pixel_tile(s_n, o_x, o_y, true, xf, yf);
-      if (new_color == 0) {
-        continue;
-      }
-
-      if (prio or old_color == 0)
-        color = new_color;
-      // FIXME only 10 per scanline
-    }
-
-    return color ? color : old_color;
   }
 
   reg_t _map_palette(wide_reg_t addr, reg_t value)

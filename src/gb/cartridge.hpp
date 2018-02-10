@@ -37,7 +37,7 @@ public:
       rom_banks(),
       ram_banks());
 
-    _ram.resize(0x2000 * ram_banks());
+    _ram.resize(0x2000 * (ram_banks()+1));
 
     _ram_enabled = false;   // FIXME: separate mbc
     _rom_mode    = true;    // FIXME: separate mbc
@@ -87,7 +87,6 @@ public:
     }
 
     if (mapped_addr >= _ram.size()) {
-      printf("ram oom access %04x => %d\n", addr, mapped_addr);
       return 0x00;
     }
 

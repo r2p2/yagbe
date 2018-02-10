@@ -60,6 +60,10 @@ public:
       value = 0;
     }
 
+    if (not internal and addr == 0xFF44) { // LY
+      _mem[addr] = 0x00;
+    }
+
     if (addr >= 0xE000 and addr < 0xFE00) {
       addr -= 0x2000; // adjust for mirror ram
     }
