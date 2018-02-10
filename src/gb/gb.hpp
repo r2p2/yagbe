@@ -24,6 +24,11 @@ public:
     return _mm.insert_rom(cartridge);
   }
 
+  Error load_ram(mem_t const& ram)
+  {
+    return _mm.load_ram(ram);
+  }
+
   void power_on()
   {
     _mm.power_on();
@@ -45,6 +50,11 @@ public:
   reg_t mem(wide_reg_t addr) const
   {
     return _mm.read(addr);
+  }
+
+  mem_t ram() const
+  {
+    return _mm.ram();
   }
 
   reg_t screen_width() const

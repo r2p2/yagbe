@@ -29,6 +29,18 @@ public:
     return Error::NoError();
   }
 
+  Error load_ram(std::vector<reg_t> const& data)
+  {
+    _ram = data;
+
+    return Error::NoError();
+  }
+
+  mem_t ram() const
+  {
+    return _ram;
+  }
+
   void power_on()
   {
     printf(
