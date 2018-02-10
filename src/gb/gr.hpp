@@ -169,8 +169,11 @@ private:
     int const v_wx = wx() - 7;
     int const v_wy = wy();
 
+    if (wx() > 166 or wy() >= 143 or line < v_wy or (line > v_wy + 144))
+      return;
+
     for (int x = 0; x < 160; ++x) {
-      if (x < v_wx or line < v_wy)
+      if (x < v_wx or x > (v_wx + 166))
         continue;
 
       _screen[line * width() + x] = _map_palette(0xFF47, _pixel_window(x, line));
@@ -267,9 +270,6 @@ private:
 
     int const bg_x = (x - wx() + 6);
     int const bg_y = (y - wy());
-
-    if (bg_x < 0 or bg_x >= 256 or bg_y < 0 or bg_y >= 256)
-      return 0x00;
 
     int const tile_x = bg_x / 8;
     int const tile_y = bg_y / 8;
