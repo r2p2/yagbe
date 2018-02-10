@@ -177,7 +177,7 @@ private:
   void _process_interrupt(wide_reg_t addr) {
     _ime = false;
     _push(_pc);
-    _pc = 0x0040;
+    _pc = addr; //0x0040;
     _halted = false; // FIXME where to put this?
   }
 
