@@ -7,7 +7,7 @@ set(DEBUG_CPU "emable cpu debug output" CACHE BOOL OFF)
 find_package(SDL2 REQUIRED)
 string (STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 
 set(SOURCE_FILES
