@@ -134,3 +134,69 @@ private:
   mem_t const& _rom;
   mem_t&       _ram;
 };
+
+class MBC5 : public MBC
+{
+public:
+  MBC5(mem_t const& rom, mem_t& ram)
+    : _ram_bank_nr(1)
+    , _rom_bank_nr(0)
+    , _rom(rom)
+    , _ram(ram)
+  {
+  }
+
+  reg_t read(wide_reg_t addr) const override
+  {
+    // FIXME: handle oom access
+
+    if (addr < 0x8000)
+      return _rom[_map_rom_addr(addr)];
+
+    return _ram[_map_ram_addr(addr)];
+  }
+
+  void write(wide_reg_t addr, reg_t value) override
+  {
+    if (addr > 0x8000) {
+      _ram[_map_ram_addr(addr)] = value;
+      return;
+    }
+
+    if (addr >= 0x2000 and addr <= 0x3FFF) {
+      _rom_bank_nr = value;
+      return;
+    }
+
+    if (addr >= 0x4000 and addr <= 0x5FFF) {
+      _ram_bank_nr = value & 0x0F;
+      return;
+    }
+  }
+
+  std::string name() const override
+  {
+    return "MBC5";
+  }
+
+private:
+  size_t _map_rom_addr(wide_reg_t addr) const
+  {
+    if (addr < 0x4000 or addr > 0x7FFF)
+      return addr;
+
+    return (addr - 0x4000) + 0x4000 * _rom_bank_nr;
+  }
+
+  size_t _map_ram_addr(wide_reg_t addr) const
+  {
+    return (addr - 0xA000) + 0x2000 * _ram_bank_nr;
+  }
+
+private:
+  int          _rom_bank_nr;
+  int          _ram_bank_nr;
+
+  mem_t const& _rom;
+  mem_t&       _ram;
+};

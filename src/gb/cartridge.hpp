@@ -76,6 +76,12 @@ public:
     // case 0x06: return MbcType::Mbc2;
     case 0x08:
     case 0x09: return MbcType::RomRam;
+    case 0x19:
+    case 0x1A:
+    case 0x1B:
+    case 0x1C:
+    case 0x1D:
+    case 0x1E: return MbcType::Mbc5;
     default:
       return MbcType::Unsupported;
     }
@@ -121,6 +127,8 @@ private:
       return std::make_unique<MBCRomOnly>(_rom);
     case MbcType::Mbc1:
       return std::make_unique<MBC1>(_rom, _ram);
+    case MbcType::Mbc5:
+      return std::make_unique<MBC5>(_rom, _ram);
     default:
       return std::unique_ptr<MBC>();
     }
