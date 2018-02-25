@@ -78,6 +78,10 @@ public:
       addr -= 0x2000; // adjust for mirror ram
     }
 
+    if (not internal and addr == 0xFF1B) { // reset wave length counter
+      value = 0xFF;
+    }
+
     if (addr == 0xFF46) { // DMA register
       wide_reg_t src = value << 8;
       for (reg_t i = 0; i < 40*4; ++i) {

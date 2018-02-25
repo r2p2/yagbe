@@ -56,6 +56,7 @@ int main(int argc, char** argv)
     }
     while(not gb.is_v_blank_completed());
     ui.tick();
+    //gb.clear_sound();
 
     auto const end = std::chrono::steady_clock::now();
     auto const delta = end - start;
@@ -64,8 +65,8 @@ int main(int argc, char** argv)
     auto const sleep = static_cast<unsigned long>((1000.0/60.0)-delta_ms); // FIXME should be 60
     start = end + std::chrono::milliseconds(sleep);
 
-    if (sleep > 0)
-      std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
+    //    if (sleep > 0)
+    // std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
   }
 
   std::ofstream s_sav_out(

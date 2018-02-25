@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../gb/gb.hpp"
+#include "channel.hpp"
 
 #include <SDL2/SDL.h>
 #include <iostream>
@@ -46,68 +47,81 @@ public:
 
   void tick()
   {
-    if (_gb.is_v_blank_completed()) {
-      SDL_Event event;
-      while(SDL_PollEvent(&event)) {
-        switch(event.type) {
-        case SDL_KEYDOWN:
-          switch (event.key.keysym.sym) {
-          case SDLK_LEFT:  _gb.left(true); break;
+    _channel_3->play(_gb.wave());
+    _gb.clear_sound();
 
-          case SDLK_RIGHT: _gb.right(true); break;
-          case SDLK_UP:    _gb.up(true); break;
-          case SDLK_DOWN:  _gb.down(true); break;
+    SDL_Event event;
+    while(SDL_PollEvent(&event)) {
+      switch(event.type) {
+      case SDL_KEYDOWN:
+        switch (event.key.keysym.sym) {
+        case SDLK_LEFT:  _gb.left(true); break;
 
-          case SDLK_a:  _gb.a(true); break;
-          case SDLK_s:  _gb.b(true); break;
-          case SDLK_y:  _gb.select(true); break;
-          case SDLK_x:  _gb.start(true); break;
-          }
-          break;
-        case SDL_KEYUP:
-          switch (event.key.keysym.sym) {
-          case SDLK_LEFT:  _gb.left(false); break;
-          case SDLK_RIGHT: _gb.right(false); break;
-          case SDLK_UP:    _gb.up(false); break;
-          case SDLK_DOWN:  _gb.down(false); break;
+        case SDLK_RIGHT: _gb.right(true); break;
+        case SDLK_UP:    _gb.up(true); break;
+        case SDLK_DOWN:  _gb.down(true); break;
 
-          case SDLK_a:  _gb.a(false); break;
-          case SDLK_s:  _gb.b(false); break;
-          case SDLK_y:  _gb.select(false); break;
-          case SDLK_x:  _gb.start(false); break;
-          }
-          break;
-        case SDL_QUIT:
-          _running= false;
-          break;
+        case SDLK_a:  _gb.a(true); break;
+        case SDLK_s:  _gb.b(true); break;
+        case SDLK_y:  _gb.select(true); break;
+        case SDLK_x:  _gb.start(true); break;
         }
-      }
+        break;
+      case SDL_KEYUP:
+        switch (event.key.keysym.sym) {
+        case SDLK_LEFT:  _gb.left(false); break;
+        case SDLK_RIGHT: _gb.right(false); break;
+        case SDLK_UP:    _gb.up(false); break;
+        case SDLK_DOWN:  _gb.down(false); break;
 
-      if (_main_ren) {
-        _render_main(_main_ren, _gb);
-        SDL_RenderPresent(_main_ren);
+        case SDLK_a:  _gb.a(false); break;
+        case SDLK_s:  _gb.b(false); break;
+        case SDLK_y:  _gb.select(false); break;
+        case SDLK_x:  _gb.start(false); break;
+        }
+        break;
+      case SDL_QUIT:
+        _running= false;
+        break;
       }
+    }
 
-      if (_mem_ren) {
-        _render_memory(_mem_ren, _gb);
-        SDL_RenderPresent(_mem_ren);
-      }
+    if (_main_ren) {
+      _render_main(_main_ren, _gb);
+      SDL_RenderPresent(_main_ren);
+    }
 
-      if (_tile_ren) {
-        _render_tiles(_tile_ren, _gb, _tile_pattern_1_start);
-        SDL_RenderPresent(_tile_ren);
+    if (_mem_ren) {
+      _render_memory(_mem_ren, _gb);
+      SDL_RenderPresent(_mem_ren);
+    }
 
-        _render_tiles(_tile2_ren, _gb, _tile_pattern_2_start);
-        SDL_RenderPresent(_tile2_ren);
-      }
+    if (_tile_ren) {
+      _render_tiles(_tile_ren, _gb, _tile_pattern_1_start);
+      SDL_RenderPresent(_tile_ren);
+
+      _render_tiles(_tile2_ren, _gb, _tile_pattern_2_start);
+      SDL_RenderPresent(_tile2_ren);
     }
   }
 
 private:
   void _init_sdl()
   {
-    if (SDL_Init(SDL_INIT_VIDEO) == -1) {
-      std::cerr << "Konnte SDL nicht initialisieren! Fehler: " << SDL_GetError() << std::endl;
+    if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) == -1) {
+      std::cerr << SDL_GetError() << std::endl;
+      SDL_Quit();
+    }
+
+    _channel_1 = Channel::build();
+    _channel_2 = Channel::build();
+    _channel_3 = Channel::build();
+    _channel_4 = Channel::build();
+
+    if (not _channel_1 or
+        not _channel_2 or
+        not _channel_3 or
+	not _channel_4) {
       SDL_Quit();
     }
   }
@@ -360,9 +374,14 @@ private:
   SDL_Window*   _tile2_win = nullptr;
   SDL_Renderer* _tile2_ren = nullptr;
 
+  std::unique_ptr<Channel> _channel_1;
+  std::unique_ptr<Channel> _channel_2;
+  std::unique_ptr<Channel> _channel_3; // wave
+  std::unique_ptr<Channel> _channel_4;
+
   wide_reg_t const _tile_pattern_1_start = 0x8000;
   wide_reg_t const _tile_pattern_2_start = 0x8800;
 
   GR::screen_t _last_screen;
-  bool              _refresh;
+  bool         _refresh;
 };

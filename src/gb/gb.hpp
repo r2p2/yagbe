@@ -6,6 +6,7 @@
 #include "cp.hpp"
 #include "input.hpp"
 #include "timer.hpp"
+#include "sound.hpp"
 
 #include <string>
 
@@ -35,6 +36,7 @@ public:
     _cp.power_on();
     _t.power_on();
     _in.power_on();
+    _snd.power_on();
   }
 
   void left(bool down) { _in.left(down); }
@@ -55,6 +57,16 @@ public:
   mem_t ram() const
   {
     return _mm.ram();
+  }
+
+  std::vector<float> wave() const
+  {
+    return _snd.wave();
+  }
+
+  void clear_sound()
+  {
+    _snd.clear();
   }
 
   reg_t screen_width() const
@@ -87,6 +99,7 @@ public:
     _in.tick();
     _t.tick();
     _gr.tick();
+    _snd.tick();
 
     // FIXME: remove this serial dbg hack
     if (_mm.read(0xFF02)) {
@@ -106,4 +119,5 @@ private:
   GR      _gr      = { _mm };
   Timer   _t       = { _mm };
   Input   _in      = { _mm };
+  Sound   _snd     = { _mm };
 };
