@@ -3,6 +3,9 @@
 #include <memory>
 #include <iostream>
 
+namespace ui
+{
+
 class Channel
 {
 public:
@@ -74,3 +77,5 @@ private:
   buffer_t _sample_buffer;
   int      _device_id;
 };
+
+} // namespace ui

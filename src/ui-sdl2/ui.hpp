@@ -6,6 +6,9 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 
+namespace ui
+{
+
 class UiSDL
 {
 public:
@@ -385,3 +388,5 @@ private:
   GR::screen_t _last_screen;
   bool         _refresh;
 };
+
+} // namespace ui

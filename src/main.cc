@@ -45,7 +45,7 @@ int main(int argc, char** argv)
   gb.load_ram(sav);
   gb.power_on();
 
-  UiSDL ui(gb, 3, false, false);
+  ui::UiSDL ui(gb, 3, false, false);
 
   int frame = 0;
   auto start = std::chrono::steady_clock::now();
