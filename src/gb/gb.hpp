@@ -59,9 +59,9 @@ public:
     return _mm.ram();
   }
 
-  std::vector<float> wave() const
+  std::vector<float> wave_channel() const
   {
-    return _snd.wave();
+    return _snd.wave_channel();
   }
 
   void clear_sound()

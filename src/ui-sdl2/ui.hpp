@@ -50,7 +50,7 @@ public:
 
   void tick()
   {
-    _channel_3->play(_gb.wave());
+    _channel_3->play(_gb.wave_channel());
     _gb.clear_sound();
 
     SDL_Event event;
